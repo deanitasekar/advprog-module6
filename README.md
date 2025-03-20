@@ -9,7 +9,26 @@ Method `handle_connection` berfungsi untuk memproses koneksi TCP dengan cara:
 
 - Menerima parameter `stream` bertipe `TcpStream`
 - Menggunakan `BufReader` untuk membungkus stream dan membaca data secara efisien baris per baris. `BufReader` membantu buffering data sehingga bisa dibaca per baris
-- Membaca seluruh request HTTP dengan menggunakan method `lines()` untuk mendapatkan iterator baris-baris, `map(|result| result.unwrap())` untuk mengambil String dari Result, `take_while(|line| !line.is_empty())` untuk membaca baris per baris hingga baris kosong (baris kosong menandakan akhir dari header HTTP), dan `collect()` untuk mengumpulkan semua baris ke dalam `Vec<String>` bernama `http_request`
+- Membaca seluruh request HTTP dengan menggunakan method `lines()` untuk mendapatkan iterator baris-baris, `map(|result| result.unwrap())` untuk mengambil string dari result, `take_while(|line| !line.is_empty())` untuk membaca baris per baris hingga baris kosong (baris kosong menandakan akhir dari header HTTP), dan `collect()` untuk mengumpulkan semua baris ke dalam `Vec<String>` bernama `http_request`
 - Mencetak request HTTP yang diterima ke konsol dengan format debug menggunakan `println!("Request: {:#?}", http_request)` untuk debugging
 
-Secara keseluruhan, method ini memiliki tanggung jawab untuk membaca setiap baris dari koneksi TCP hingga menemukan baris kosong dan mencetak request HTTP ke konsol
+Secara keseluruhan, method ini memiliki tanggung jawab untuk membaca setiap baris dari koneksi TCP hingga menemukan baris kosong dan mencetak request HTTP ke konsol.
+
+## 2. Commit 2 (Returning HTML)
+![Commit 2 screen capture](/assets/images/commit2.png)
+
+What you have learned about the new code the handle_connection?
+
+```rust
+let status_line = "HTTP/1.1 200 OK"; 
+    let contents = fs::read_to_string("hello.html").unwrap(); 
+    let length = contents.len(); 
+  
+    let response = 
+        format!("{status_line}\r\nContent-Length: 
+ {length}\r\n\r\n{contents}"); 
+  
+    stream.write_all(response.as_bytes()).unwrap();
+```
+
+Melalui pembaruan kode pada fungsi `handle_connection`, fungsi ini tidak hanya membaca request HTTP, tetapi juga mengirimkan respon balik. Server membuat status line HTTP dengan kode `HTTP/1.1 200 OK` yang menandakan bahwa permintaan berhasil diproses, lalu membaca `hello.html` menggunakan fungsi `fs::read_to_string()` dan menggunakan `unwrap()` untuk mengambil string dengan mengabaikan kemungkinan error. Kemudian, server menghitung panjang konten HTML dengan `contents.len()` untuk dimasukkan ke dalam header HTTP. Server menyusun respons lengkap dalam format HTTP dengan menggabungkan status line, header Content-Length, baris kosong pemisah, dan isi HTML menggunakan `format!()`. Respon ini dikonversi menjadi bytes dengan `as_bytes()` dan dikirimkan kembali melalui koneksi TCP yang sama menggunakan kode `stream.write_all()`.

@@ -64,3 +64,11 @@ ThreadPool adalah kumpulan thread yang telah dibuat (spawned) dan siap untuk mel
 Ketika program berjalan, method `main` membuat ThreadPool baru dengan kapasitas 4 thread. Kemudian, server menggunakan method `pool.execute()` untuk meneruskan `handle_connection` ke ThreadPool. Di dalam ThreadPool, method `execute` bertugas menerima tas yang akan dijalankan dan mendistribusikannya ke salah satu thread yang tersedia. Dengan begitu, setiap task dapat diproses secara bersamaan oleh thread yang berbeda.
 
 Secara keseluruhan, ThreadPool memungkinkan server untuk menangani berbagai request secara bersamaan dengan jumlah thread yang terbatas dan terkontrol, meningkatkan throughput server tanpa membebani sistem dengan terlalu banyak thread.
+
+## Bonus. Commit Bonus Reflection (Function improvement)
+
+![Commit bonus screen capture](/assets/images/commitbonus.png)
+
+Saya melakukan function improvement pada pembuatan ThreadPool dengan mengganti method `new` menjadi method `build`. Perubahan ini didasarkan pada prinsip bahwa pembuatan ThreadPool memiliki kemungkinan untuk gagal ketika size bernilai 0 atau negatif. Method `build` mengembalikan tipe `Result` yang memungkinkan penanganan error dengan lebih baik. Jika input size ThreadPool <= 0, method ini akan mengembalikan error dengan pesan "ThreadPool size must be a positive integer (greater than zero)." Dengan demikian, error dapat ditangani di level yang lebih tinggi, yaitu dalam method `main`.
+
+Di method `main`, saya melakukan perubahan pemanggilan dari `ThreadPool::new` menjadi `ThreadPool::build().unwrap_or_else()`, memungkinkan penanganan error yang lebih baik dengan menampilkan pesan informatif ketika terjadi kegagalan. Cara ini membuat kode lebih modular dan error handling lebih jelas karena kesalahan dapat diketahui secara langsung, yaitu pada proses pembuatan ThreadPool.

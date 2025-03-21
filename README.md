@@ -32,3 +32,12 @@ let status_line = "HTTP/1.1 200 OK";
 ```
 
 Melalui pembaruan kode pada fungsi `handle_connection`, fungsi ini tidak hanya membaca request HTTP, tetapi juga mengirimkan respon balik. Server membuat status line HTTP dengan kode `HTTP/1.1 200 OK` yang menandakan bahwa permintaan berhasil diproses, lalu membaca `hello.html` menggunakan fungsi `fs::read_to_string()` dan menggunakan `unwrap()` untuk mengambil string dengan mengabaikan kemungkinan error. Kemudian, server menghitung panjang konten HTML dengan `contents.len()` untuk dimasukkan ke dalam header HTTP. Server menyusun respons lengkap dalam format HTTP dengan menggabungkan status line, header Content-Length, baris kosong pemisah, dan isi HTML menggunakan `format!()`. Respon ini dikonversi menjadi bytes dengan `as_bytes()` dan dikirimkan kembali melalui koneksi TCP yang sama menggunakan kode `stream.write_all()`.
+
+## 3. Commit 3 (Validating request and selectively responding)
+![Commit 3 screen capture](/assets/images/commit3.png)
+
+How to split between response and why the refactoring is needed?
+
+Untuk memisahkan respons pada server HTTP, digunakan pengecekan `request_line` untuk menentukan jenis respons yang tepat. Server akan memeriksa apakah nilai `request_line` sama dengan `GET/HTTP/1.1`. Jika kondisi ini terpenuhi, server akan mengirimkan respons berisi file `hello.html` dengan status `200 OK`. Namun, apabila kondisi tidak terpenuhi, server akan mengirimkan respons yang berisi file `404.html` dengan status `494 NOT FOUND`. Pendekatan ini memungkinkan server memberikan respons yang sesuai berdasarkan jenis permintaan yang diterima.
+
+Refactoring diperlukan karena terdapat duplikasi kode dalam implementasi awal. Blok `if-else` hanya berbeda pada dua baris kode (`status_line` dan `contents`). sementara bagian lainnya identik. Refactoring ini dapat menghilangkan redundasi sehingga meningkatkan keterbacaan kode, memudahkan pemeliharaan, dan membuat kode lebih mudah dikembangkan.
